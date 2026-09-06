@@ -1,6 +1,6 @@
 ---
 name: model-effort-selector
-description: Inspect relevant project files before recommending a GPT model and reasoning effort for work in a folder or repository. Also compare model settings or plan economical workflow stages, including scientific writing with experimental results and calculations. This skill advises; it does not start the underlying task or switch models.
+description: Recommend a GPT model and reasoning effort using relevant project files when a folder is identified, or prompts alone otherwise. Also compare model settings or plan economical workflow stages, including scientific writing with experimental results and calculations. This skill advises; it does not start the underlying task or switch models.
 ---
 
 # Model and Effort Selector
@@ -22,14 +22,21 @@ the task. Do not recursively invoke a selector to choose the selector.
 
 ## Gather only decision-changing information
 
-For a folder/repository task, inspect actual project evidence before giving a
-project-specific recommendation. The prompt alone is not sufficient. Resolve
-the explicitly named folder first, then the active project context; never treat
-a system directory or this installed skill's own folder as the target project.
-If the project location is unknown, ask for it. For a purely hypothetical question,
-give generic guidance and say that no project files were examined.
+Resolve an explicitly named folder first, then a clearly identified active project.
+When a folder is identified, inspect relevant files before giving project-grounded
+advice. Never treat a system directory or this installed skill's own folder as
+the target project.
 
-Start with a bounded inventory and README/AGENTS/project notes, then read the
+If no folder is identified, recommend directly from the user's prompts and relevant
+conversation context. Do not ask for a folder, search unrelated locations, or block
+the recommendation merely because no folder is known. This fallback applies to
+real tasks as well as hypothetical questions. Label the assessment **prompt-only**,
+state decision-relevant assumptions, and say that no project files were inspected.
+An explicitly supplied invalid or inaccessible folder is different: disclose the
+access problem rather than silently treating it as an absent folder. Any provisional
+prompt-only advice must make that evidence limitation clear.
+
+When inspecting a folder, start with a bounded inventory and README/AGENTS/project notes, then read the
 files relevant to the requested work: draft sections, result summaries, table
 headers and samples, calculation scripts, source modules, test cases, or existing
 failure reports. File counts and extensions alone do not establish difficulty.
@@ -57,7 +64,8 @@ Ground the classification in what you actually read. Identify:
 - Cost/latency preference, error consequences, existing validated model choices,
   and any specific failure of the current configuration.
 
-Ask one focused question only when its answer would change the recommendation.
+Ask one focused question only for a missing task requirement that would change
+the recommendation, not merely to obtain an unidentified folder.
 Use the smallest sufficient set of relevant files, not the entire project or corpus.
 When classification requires substantive analysis, explain that boundary first.
 
@@ -114,7 +122,9 @@ has a clear benefit and the project permits delegation. Do not require two model
 ## Optional reproducible helper
 
 Use `scripts/select_model.py` when repeatable structured recommendations are useful.
-Read and interpret project evidence first, then supply the resulting classification.
+If a folder is identified, read and interpret project evidence first, then supply
+the resulting classification. Otherwise classify the prompt and omit `--project`;
+no folder lookup or review gate is needed for that fallback.
 With `--project`, the helper gathers file evidence; it does not semantically
 understand raw prose, discover models, access credentials, or execute a model.
 It prints JSON only. Without a project it explicitly labels output as task-flags-only.
@@ -144,6 +154,8 @@ silently substituting a weaker model. Review the explanation before presenting i
 For project-specific advice, name the folder and 2-4 actually inspected evidence
 locations (or all if fewer), summarize what they reveal about the task, and state
 unreadable files or scope limits. Do not call an inventory a content review.
+For prompt-only advice, state that basis and the key assumptions instead of listing
+file evidence; do not imply that the project was inspected.
 Then give the model + effort, one sentence why, and a concrete escalation or
 downgrade condition. Add a stage split only for genuinely mixed workflows. State
 uncertainty and label untested recommendations. Do not promise that Luna xhigh

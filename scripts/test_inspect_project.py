@@ -4,6 +4,9 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
+
+import select_model
 
 from inspect_project import inspect_project
 
@@ -96,6 +99,30 @@ class ProjectEvidenceTests(unittest.TestCase):
             result = self.run_selector('--project', empty, '--project-reviewed')
             self.assertEqual(result['status'], 'needs_project_review')
             self.assertIsNone(result['model'])
+
+    def test_no_folder_recommends_without_inspection(self):
+        with patch.object(sys, 'argv', ['select_model.py', '--workload', 'extraction']), \
+                patch.object(select_model, 'inspect_project', side_effect=AssertionError('Must not inspect without a folder')) as inspect, \
+                patch('builtins.print') as output:
+            select_model.main()
+        inspect.assert_not_called()
+        result = json.loads(output.call_args.args[0])
+        self.assertEqual(result['status'], 'recommended')
+        self.assertIsNotNone(result['model'])
+        self.assertIsNotNone(result['reasoning_effort'])
+        self.assertEqual(result['evidence_basis'], 'task_flags_only')
+        self.assertNotIn('project_context', result)
+        self.assertTrue(any('Prompt-only' in warning for warning in result['warnings']))
+
+    def test_invalid_explicit_folder_does_not_silently_fall_back(self):
+        script = str(Path(__file__).with_name('select_model.py'))
+        proc = subprocess.run(
+            [sys.executable, script, '--workload', 'extraction', '--project', str(self.root / 'missing')],
+            capture_output=True, text=True,
+        )
+        self.assertNotEqual(proc.returncode, 0)
+        self.assertEqual(proc.stdout, '')
+        self.assertIn('error:', proc.stderr)
 
 
 if __name__ == '__main__':

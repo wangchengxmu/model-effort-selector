@@ -11,7 +11,7 @@ and not an official OpenAI product.
 ## What it does
 
 - Separates model capability from reasoning effort.
-- Reads relevant files before giving project-specific advice; a prompt-only assessment is labeled as generic.
+- Reads relevant files when a project folder is identified; otherwise recommends directly from prompts, labeled prompt-only, without asking for a folder.
 - Distinguishes routine reporting from difficult interpretation.
 - Reserves xhigh for a specific difficult reasoning problem, not simply a long task.
 - Recognizes missing evidence and failed tools as problems that more reasoning cannot fix.
@@ -48,6 +48,12 @@ Invoke it in Codex:
 
 If it is not discovered yet, start a new task or ask Codex to read the installed
 `SKILL.md` directly. Do not replace unrelated settings or other skills.
+
+No folder identified? Just describe the task. The skill uses your prompts and
+relevant conversation context, states its assumptions, and does not ask for a
+folder or scan unrelated locations. This applies to real and hypothetical tasks.
+An explicitly supplied invalid or inaccessible folder is reported as an evidence
+limitation, not silently treated as an absent folder.
 
 ## Which model runs the selector?
 
@@ -90,7 +96,7 @@ directories. Possible secret-bearing excerpts are withheld on a best-effort basi
 No project code is executed. Reports can contain private source text: keep them
 local and review them before sharing. No automatic upload or telemetry exists.
 
-### Generic scenarios
+### Prompt-only fallback
 
 Requires Python 3.10+ and only the standard library. Run from this repository:
 
@@ -101,8 +107,11 @@ python scripts/select_model.py --workload debugging --complexity hard --reasonin
 python scripts/select_model.py --help
 ```
 
-Without `--project`, these examples are generic, task-flags-only guidance, not a
-claim that project files were reviewed. Output is JSON with a candidate pair, reason, warnings, availability basis,
+When no folder is identified, the agent classifies the prompt into task flags and
+omits `--project`. The helper returns a recommendation immediately, with
+`evidence_basis: task_flags_only`; it does not inspect the current directory or
+require project review. This is prompt-only guidance, not a claim that project
+files were reviewed. Output is JSON with a candidate pair, reason, warnings, availability basis,
 and `dispatch_performed: false`. No credentials are read and no network requests
 are made by this helper. An optional agent using the skill may consult official
 documentation when current product details are needed.

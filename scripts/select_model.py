@@ -151,7 +151,7 @@ def main():
             else:
                 result['evidence_basis'] = 'project_review_asserted_by_caller'
         else:
-            result['warnings'].append('No folder inspected. This is generic guidance, not a project-grounded assessment.')
+            result['warnings'].append('No folder identified or inspected. Prompt-only guidance from caller-supplied task flags, not a project-grounded assessment.')
     except (ValueError, OSError) as error:
         parser.error(str(error))
     print(json.dumps(result, indent=2))

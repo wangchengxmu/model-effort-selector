@@ -1,4 +1,4 @@
 interface:
   display_name: "Model and Effort Selector"
-  short_description: "Inspect project files, then choose model and effort"
-  default_prompt: "Use $model-effort-selector to inspect the relevant files in my project, recommend a model and reasoning effort based on that evidence, and state when to escalate without changing settings."
+  short_description: "Choose model and effort from project files or prompts"
+  default_prompt: "Use $model-effort-selector to recommend a model and reasoning effort. Inspect relevant project files when a folder is identified; otherwise use my prompts without asking for a folder. State the evidence basis and when to escalate, without changing settings."
